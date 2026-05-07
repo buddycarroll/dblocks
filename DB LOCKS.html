@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI-powered predictive sports analysis for AFL, NRL, and NBA. Data-driven selections delivered to your Discord 5 hours before every game.">
+  <meta property="og:title" content="DB Locks — You Lose Some, You Win More">
+  <meta property="og:description" content="AI-powered sports analysis for AFL, NRL & NBA. Picks delivered to Discord 5 hours before every game.">
+  <meta property="og:type" content="website">
+  <title>DB Locks — You Lose Some, You Win More</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #C9A84C;
+      --gold-bright: #F0C040;
+      --gold-dim: #8A6E2F;
+      --black: #080808;
+      --black-2: #111111;
+      --black-3: #1A1A1A;
+      --black-4: #242424;
+      --white: #F5F5F0;
+      --grey: #888880;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE TEXTURE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.4;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(to bottom, rgba(8,8,8,0.95), transparent);
+      backdrop-filter: blur(8px);
+    }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 28px;
+      letter-spacing: 3px;
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .nav-logo span { color: var(--white); }
+
+    .nav-cta {
+      background: var(--gold);
+      color: var(--black);
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 10px 24px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .nav-cta:hover { background: var(--gold-bright); transform: translateY(-1px); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(ellipse, rgba(201,168,76,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--black-3);
+      border: 1px solid var(--gold-dim);
+      padding: 6px 16px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 32px;
+      animation: fadeInDown 0.8s ease forwards;
+    }
+
+    .hero-badge::before {
+      content: '●';
+      color: var(--gold-bright);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(72px, 12vw, 160px);
+      line-height: 0.9;
+      letter-spacing: 2px;
+      color: var(--white);
+      margin-bottom: 8px;
+      animation: fadeInUp 0.8s 0.1s ease both;
+    }
+
+    .hero-title .gold { color: var(--gold); }
+
+    .hero-tagline {
+      font-family: var(--font-display);
+      font-size: clamp(20px, 4vw, 40px);
+      letter-spacing: 4px;
+      color: var(--grey);
+      margin-bottom: 32px;
+      animation: fadeInUp 0.8s 0.2s ease both;
+    }
+
+    .hero-sub {
+      font-size: 18px;
+      font-weight: 300;
+      color: var(--grey);
+      max-width: 520px;
+      margin: 0 auto 48px;
+      line-height: 1.7;
+      animation: fadeInUp 0.8s 0.3s ease both;
+    }
+
+    .hero-sub strong { color: var(--white); font-weight: 500; }
+
+    .cta-button {
+      display: inline-block;
+      background: var(--gold);
+      color: var(--black);
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 18px 48px;
+      text-decoration: none;
+      transition: all 0.2s;
+      animation: fadeInUp 0.8s 0.4s ease both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-button::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%);
+      transform: translateX(-100%);
+      transition: transform 0.5s;
+    }
+
+    .cta-button:hover { background: var(--gold-bright); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(201,168,76,0.3); }
+    .cta-button:hover::after { transform: translateX(100%); }
+
+    .cta-sub {
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--grey);
+      font-family: var(--font-mono);
+      animation: fadeInUp 0.8s 0.5s ease both;
+    }
+
+    .sports-row {
+      display: flex;
+      gap: 32px;
+      margin-top: 64px;
+      justify-content: center;
+      animation: fadeInUp 0.8s 0.6s ease both;
+    }
+
+    .sport-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      color: var(--grey);
+      text-transform: uppercase;
+    }
+
+    .sport-pill .emoji { font-size: 18px; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold-dim), transparent);
+      margin: 0;
+    }
+
+    /* ── TICKER ── */
+    .ticker {
+      background: var(--black-2);
+      padding: 12px 0;
+      overflow: hidden;
+      border-top: 1px solid var(--black-4);
+      border-bottom: 1px solid var(--black-4);
+    }
+
+    .ticker-track {
+      display: flex;
+      gap: 48px;
+      animation: ticker 20s linear infinite;
+      white-space: nowrap;
+    }
+
+    .ticker-item {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      flex-shrink: 0;
+    }
+
+    .ticker-item span { color: var(--gold); margin-right: 8px; }
+
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* ── SECTIONS ── */
+    section {
+      padding: 100px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(40px, 6vw, 72px);
+      line-height: 1;
+      letter-spacing: 1px;
+      margin-bottom: 24px;
+    }
+
+    .section-body {
+      font-size: 17px;
+      color: var(--grey);
+      max-width: 560px;
+      line-height: 1.8;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-top: 64px;
+      background: var(--black-4);
+    }
+
+    .how-card {
+      background: var(--black-2);
+      padding: 48px 36px;
+      position: relative;
+    }
+
+    .how-num {
+      font-family: var(--font-display);
+      font-size: 80px;
+      line-height: 1;
+      color: var(--black-4);
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      letter-spacing: -2px;
+      user-select: none;
+    }
+
+    .how-icon {
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+
+    .how-title {
+      font-family: var(--font-display);
+      font-size: 28px;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      color: var(--white);
+    }
+
+    .how-body {
+      font-size: 15px;
+      color: var(--grey);
+      line-height: 1.7;
+    }
+
+    /* ── WHAT YOU GET ── */
+    .sports-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-top: 64px;
+      background: var(--black-4);
+    }
+
+    .sport-card {
+      background: var(--black-2);
+      padding: 48px 36px;
+      border-bottom: 3px solid transparent;
+      transition: border-color 0.3s, background 0.3s;
+      cursor: default;
+    }
+
+    .sport-card:hover {
+      background: var(--black-3);
+      border-bottom-color: var(--gold);
+    }
+
+    .sport-emoji { font-size: 48px; margin-bottom: 24px; display: block; }
+
+    .sport-name {
+      font-family: var(--font-display);
+      font-size: 36px;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+      color: var(--white);
+    }
+
+    .sport-desc {
+      font-size: 15px;
+      color: var(--grey);
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+
+    .sport-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      background: var(--black-4);
+      color: var(--gold-dim);
+      padding: 4px 10px;
+      border: 1px solid var(--black-4);
+    }
+
+    /* ── MODEL SECTION ── */
+    .model-section {
+      background: var(--black-2);
+      border-top: 1px solid var(--black-4);
+      border-bottom: 1px solid var(--black-4);
+      padding: 100px 24px;
+    }
+
+    .model-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .model-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      background: var(--black-4);
+    }
+
+    .stat-card {
+      background: var(--black-3);
+      padding: 32px;
+    }
+
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: 56px;
+      line-height: 1;
+      color: var(--gold);
+      letter-spacing: -1px;
+    }
+
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--grey);
+      margin-top: 8px;
+    }
+
+    /* ── PRICING ── */
+    .pricing-section {
+      text-align: center;
+      padding: 100px 24px;
+    }
+
+    .price-card {
+      background: var(--black-2);
+      border: 1px solid var(--gold-dim);
+      max-width: 480px;
+      margin: 64px auto 0;
+      padding: 56px 48px;
+      position: relative;
+    }
+
+    .price-card::before {
+      content: 'MOST POPULAR';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gold);
+      color: var(--black);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 2px;
+      padding: 4px 16px;
+    }
+
+    .price-amount {
+      font-family: var(--font-display);
+      font-size: 96px;
+      line-height: 1;
+      color: var(--white);
+      letter-spacing: -2px;
+    }
+
+    .price-amount sup {
+      font-size: 32px;
+      vertical-align: top;
+      margin-top: 16px;
+      color: var(--gold);
+      font-family: var(--font-body);
+      font-weight: 600;
+    }
+
+    .price-period {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      letter-spacing: 2px;
+      color: var(--grey);
+      text-transform: uppercase;
+      margin-bottom: 40px;
+    }
+
+    .price-features {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 40px;
+    }
+
+    .price-features li {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--black-4);
+      font-size: 15px;
+      color: var(--grey);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .price-features li::before {
+      content: '✓';
+      color: var(--gold);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .price-features li:last-child { border-bottom: none; }
+
+    .price-cta {
+      display: block;
+      background: var(--gold);
+      color: var(--black);
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 18px 48px;
+      text-decoration: none;
+      transition: all 0.2s;
+      width: 100%;
+      text-align: center;
+    }
+
+    .price-cta:hover { background: var(--gold-bright); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(201,168,76,0.3); }
+
+    .price-note {
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--grey);
+      font-family: var(--font-mono);
+    }
+
+    /* ── DISCORD PREVIEW ── */
+    .discord-preview {
+      background: var(--black-3);
+      border: 1px solid var(--black-4);
+      border-radius: 4px;
+      padding: 20px;
+      margin-top: 64px;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .discord-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--grey);
+    }
+
+    .discord-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--gold);
+      animation: pulse 2s infinite;
+    }
+
+    .discord-msg {
+      background: var(--black-4);
+      border-left: 3px solid var(--gold);
+      padding: 16px;
+      margin-bottom: 8px;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .discord-msg-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      letter-spacing: 1px;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .discord-msg-body {
+      font-size: 13px;
+      color: var(--grey);
+      line-height: 1.6;
+    }
+
+    .discord-msg-body strong { color: var(--white); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--black-2);
+      border-top: 1px solid var(--black-4);
+      padding: 48px 24px;
+      text-align: center;
+    }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 32px;
+      letter-spacing: 4px;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .footer-tagline {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--grey);
+      margin-bottom: 32px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      margin-bottom: 32px;
+    }
+
+    .footer-links a {
+      color: var(--grey);
+      text-decoration: none;
+      font-size: 13px;
+      font-family: var(--font-mono);
+      letter-spacing: 1px;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--gold); }
+
+    .footer-disclaimer {
+      font-size: 12px;
+      color: var(--grey);
+      max-width: 600px;
+      margin: 0 auto 24px;
+      line-height: 1.6;
+      opacity: 0.7;
+    }
+
+    .footer-copy {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--grey);
+      opacity: 0.5;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      nav { padding: 16px 20px; }
+      .nav-logo { font-size: 22px; }
+      .nav-cta { padding: 8px 16px; font-size: 11px; }
+      .how-grid, .sports-grid { grid-template-columns: 1fr; }
+      .model-inner { grid-template-columns: 1fr; gap: 40px; }
+      .model-stats { grid-template-columns: 1fr 1fr; }
+      .sports-row { gap: 16px; flex-wrap: wrap; }
+      section { padding: 60px 20px; }
+      .price-card { padding: 40px 24px; }
+      .price-amount { font-size: 72px; }
+      .footer-links { flex-direction: column; gap: 16px; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">DB <span>LOCKS</span></a>
+    <a href="https://whop.com/checkout/plan_7qWYRMqO0BQ3E" class="nav-cta">Get Access — $10/wk</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">AI-Powered Sports Analysis • Live Now</div>
+    <h1 class="hero-title">DB<br><span class="gold">LOCKS</span></h1>
+    <p class="hero-tagline">You Lose Some, You Win More</p>
+    <p class="hero-sub">
+      <strong>AI-driven statistical analysis</strong> for AFL, NRL and NBA —
+      delivered to your Discord <strong>5 hours before every game.</strong>
+    </p>
+    <a href="https://whop.com/checkout/plan_7qWYRMqO0BQ3E" class="cta-button">Get Access — $10 / Week</a>
+    <p class="cta-sub">Cancel anytime · Instant Discord access</p>
+    <div class="sports-row">
+      <div class="sport-pill"><span class="emoji">🦘</span> AFL</div>
+      <div class="sport-pill"><span class="emoji">🏉</span> NRL</div>
+      <div class="sport-pill"><span class="emoji">🏀</span> NBA</div>
+    </div>
+  </section>
+
+  <!-- TICKER -->
+  <div class="ticker">
+    <div class="ticker-track">
+      <div class="ticker-item"><span>AFL</span>Singles · Multis · Player Props</div>
+      <div class="ticker-item"><span>NRL</span>Try Scorers · Line Markets · Totals</div>
+      <div class="ticker-item"><span>NBA</span>Player Performance · Game Totals · SGM</div>
+      <div class="ticker-item"><span>AI</span>Reasoning on every pick</div>
+      <div class="ticker-item"><span>5HRS</span>Before every game</div>
+      <div class="ticker-item"><span>AFL</span>Singles · Multis · Player Props</div>
+      <div class="ticker-item"><span>NRL</span>Try Scorers · Line Markets · Totals</div>
+      <div class="ticker-item"><span>NBA</span>Player Performance · Game Totals · SGM</div>
+      <div class="ticker-item"><span>AI</span>Reasoning on every pick</div>
+      <div class="ticker-item"><span>5HRS</span>Before every game</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- HOW IT WORKS -->
+  <section>
+    <div class="reveal">
+      <p class="section-label">How It Works</p>
+      <h2 class="section-title">Simple as <span style="color:var(--gold)">that.</span></h2>
+      <p class="section-body">No complicated systems. No spreadsheets. Just picks landing in your Discord before every game.</p>
+    </div>
+    <div class="how-grid reveal">
+      <div class="how-card">
+        <span class="how-num">01</span>
+        <div class="how-icon">💳</div>
+        <h3 class="how-title">Subscribe</h3>
+        <p class="how-body">$10 AUD a week. No lock-in, no BS. Cancel anytime from your Whop dashboard.</p>
+      </div>
+      <div class="how-card">
+        <span class="how-num">02</span>
+        <div class="how-icon">💬</div>
+        <h3 class="how-title">Join Discord</h3>
+        <p class="how-body">Instant access to your private picks channel. All three sports in their own dedicated feed.</p>
+      </div>
+      <div class="how-card">
+        <span class="how-num">03</span>
+        <div class="how-icon">📊</div>
+        <h3 class="how-title">Follow the Analysis</h3>
+        <p class="how-body">Picks land 5 hours before every game. AI reasoning included on every single selection.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- WHAT YOU GET -->
+  <section>
+    <div class="reveal">
+      <p class="section-label">What You Get</p>
+      <h2 class="section-title">Three sports. <span style="color:var(--gold)">Daily.</span></h2>
+      <p class="section-body">Every game, every round, covered by the model. Singles, multis, and same-game combos.</p>
+    </div>
+    <div class="sports-grid reveal">
+      <div class="sport-card">
+        <span class="sport-emoji">🦘</span>
+        <h3 class="sport-name">AFL</h3>
+        <p class="sport-desc">Round-by-round analysis covering the full slate of games. Player props, game totals, line markets and same-game multis built from players on hot streaks.</p>
+        <div class="sport-tags">
+          <span class="tag">Singles</span>
+          <span class="tag">Player Props</span>
+          <span class="tag">SGM</span>
+          <span class="tag">Totals</span>
+        </div>
+      </div>
+      <div class="sport-card">
+        <span class="sport-emoji">🏉</span>
+        <h3 class="sport-name">NRL</h3>
+        <p class="sport-desc">Weekly NRL picks covering every game. Try scorer analysis, half-time lines, totals markets and same-game multis for every round.</p>
+        <div class="sport-tags">
+          <span class="tag">Try Scorers</span>
+          <span class="tag">Line Markets</span>
+          <span class="tag">SGM</span>
+          <span class="tag">Totals</span>
+        </div>
+      </div>
+      <div class="sport-card">
+        <span class="sport-emoji">🏀</span>
+        <h3 class="sport-name">NBA</h3>
+        <p class="sport-desc">Daily NBA analysis. Player performance markets, points/rebounds/assists props, game totals and combined multis across every night of the season.</p>
+        <div class="sport-tags">
+          <span class="tag">Player Props</span>
+          <span class="tag">Game Totals</span>
+          <span class="tag">SGM</span>
+          <span class="tag">H2H</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODEL SECTION -->
+  <div class="model-section">
+    <div class="model-inner reveal">
+      <div>
+        <p class="section-label">The Model</p>
+        <h2 class="section-title">Data doesn't <span style="color:var(--gold)">lie.</span></h2>
+        <p class="section-body" style="margin-bottom:24px">
+          DB Locks uses a statistical model that analyses thousands of data points per game — historical performance, player form, market pricing and matchup factors.
+        </p>
+        <p class="section-body">
+          Every selection is backed by a <strong style="color:var(--white)">probability differential</strong> — where our model disagrees with the bookmaker's implied odds. We show our reasoning, not just our picks.
+        </p>
+      </div>
+      <div class="model-stats">
+        <div class="stat-card">
+          <div class="stat-num">3+</div>
+          <div class="stat-label">Singles per game</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">2</div>
+          <div class="stat-label">SGMs per game</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">5hr</div>
+          <div class="stat-label">Before kickoff</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">AI</div>
+          <div class="stat-label">Reasoning included</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISCORD PREVIEW -->
+  <section style="text-align:center">
+    <div class="reveal">
+      <p class="section-label">What It Looks Like</p>
+      <h2 class="section-title">Straight to your <span style="color:var(--gold)">Discord.</span></h2>
+      <p class="section-body" style="margin:0 auto 48px">Clean, clear cards for every pick. No noise. Just the analysis you need.</p>
+    </div>
+    <div class="discord-preview reveal">
+      <div class="discord-header">
+        <div class="discord-dot"></div>
+        #afl-picks · DB Locks
+      </div>
+      <div class="discord-msg">
+        <div class="discord-msg-title">🦘 Player Performance — AFL</div>
+        <div class="discord-msg-body">
+          <strong>Geelong Cats vs North Melbourne</strong><br>
+          07 May 2026 16:35 AEST<br><br>
+          <strong>Selection:</strong> Patrick Dangerfield Over 28.5 Disposals<br>
+          <strong>Odds:</strong> 1.85<br>
+          <strong>Market implied probability:</strong> 62.3%<br>
+          <strong>Market:</strong> Player Disposals<br><br>
+          💡 <strong>Reasoning:</strong> Dangerfield has averaged 31.2 disposals over his last 5 games and faces North Melbourne's midfield ranked last in the league for contested possessions allowed.
+        </div>
+      </div>
+      <div class="discord-msg">
+        <div class="discord-msg-title">🔗 Same Game Multi — AFL</div>
+        <div class="discord-msg-body">
+          <strong>Leg 1:</strong> Dangerfield Over 28.5 Disposals @ 1.85 — 🔥 Hit 4 of last 5<br>
+          <strong>Leg 2:</strong> Tom Hawkins Over 1.5 Goals @ 1.74 — ⚡ Hit 4 of last 5<br>
+          <strong>Leg 3:</strong> Geelong Cats to Win @ 1.28 — ✅ Hit 3 of last 5<br><br>
+          <strong>Estimated combined odds: ~3.80*</strong><br>
+          *Actual SGM odds may vary. Build on Sportsbet.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- PRICING -->
+  <section class="pricing-section">
+    <div class="reveal">
+      <p class="section-label">Pricing</p>
+      <h2 class="section-title">One price. <span style="color:var(--gold)">Everything.</span></h2>
+      <p class="section-body" style="margin:0 auto">AFL, NRL and NBA. All three sports. All picks. Cancel anytime.</p>
+    </div>
+    <div class="price-card reveal">
+      <div class="price-amount"><sup>$</sup>10</div>
+      <p class="price-period">AUD per week</p>
+      <ul class="price-features">
+        <li>AFL, NRL & NBA picks every day</li>
+        <li>3+ singles per game with AI reasoning</li>
+        <li>2 same-game multis per game</li>
+        <li>Picks posted 5 hours before kickoff</li>
+        <li>Private Discord access</li>
+        <li>Results tracking & performance record</li>
+        <li>Cancel anytime, no lock-in</li>
+      </ul>
+      <a href="https://whop.com/checkout/plan_7qWYRMqO0BQ3E" class="price-cta">Get Access Now</a>
+      <p class="price-note">Instant Discord access after payment</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">DB LOCKS</div>
+    <p class="footer-tagline">Predictive Sports Modelling</p>
+    <div class="footer-links">
+      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/terms.html">Terms of Service</a>
+      <a href="mailto:hello@dblocks.au">Contact</a>
+    </div>
+    <p class="footer-disclaimer">
+      DB Locks provides statistical analysis and predictive modelling only. This is not financial or gambling advice.
+      Always gamble responsibly. You must be 18+ to subscribe. If gambling is affecting you or someone you know,
+      call the National Gambling Helpline: <strong>1800 858 858</strong>. gamblinghelponline.org.au
+    </p>
+    <p class="footer-copy">© 2026 DB Locks. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
